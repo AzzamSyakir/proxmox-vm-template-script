@@ -16,7 +16,7 @@ tmp_memory="2048"
 rootPasswd="rootpassword"
 cpuTypeRequired="host"
 userVmPassword="userpassword"
-ghToken="jfjyfjkgighi"
+ghToken=""
 vmSize="10G"
 sshKey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCbD+rEp2nhup4QDDeO/+mmCidCfPJ1O9qzRx5ON3/HQFkjsachM19RY6nXKi3ZwADQAHUYgsv1xE70vW7A5m6z9FaJRaW/qCVP8E1Ay7xN2FVg+4LDWvYZcRZ+ldb/KgJpDRvmNIO00MrSOgKoqZN7a4resM/kGI/OnbZ2NM635aMg0RUXJUhC6299Sat8r2+nzxoUxrqLChlGlmMnqEEMlrzyjkcWmjj1UUF4hvdvXMeSgpOAlc2QSZKyh4quUbOPiN0nRPq/IYU8mfRYJOeGUDE0zDMsZS302fZ/Y2vEi/rdGSMFe09zEk1OHgqAm6t7wnOJShu/4dcc06SZGz8NA7WNfM5omuUchMRyx2/aZEYZd7ZbAS5Hj2SV4vWOl+c9AXabLD2P+ZzjyFCL7BMFOb2p6Mp/59X35Uc+dBOVqhBmfwROmceqdaBad5FQk4L892d4AYrCVw5shepEp5yf4KGqyIQx12SH7hkRWTKFgis1lfMKH2LJW2c1h5CZpEIPe3VB+f2ojjK6OoPb32FtmcnEkqkp1uKw2j7bmHiOg7+CqZ7qYikcSRVAiLzjJJHUEbKDbb/hT2m5Qj8mG9j0EqEGzxy7L0KTGg8QAu9yx1s36Q+eMGBZHiDYiuwi9OBVSsb2OyYIBBNClUNUycU4RqWfKFIMkwIHnItY+Bquhw== asakusa@archangel"
 
@@ -73,24 +73,13 @@ qm destroy "$virtualMachineId"
 virt-customize -a "$imageName" --install qemu-guest-agent
 virt-customize -a "$imageName" --root-password password:"$rootPasswd"
 
-# =========================
-# Perbesar disk sebelum impor
-# =========================
-# 1. Copy image asli -> old.img
-# 2. Buat new.img dengan size = $vmSize
-# 3. Gunakan virt-resize untuk menyalin & expand partisi root
-#    *Jika partisi root di /dev/sda2, ubah --expand /dev/sda2
-#    *Jika di /dev/sda1, gunakan /dev/sda1
-#    (Contoh di sini asumsikan /dev/sda1 adalah partisi root.)
+# Resize disk sebelum impor (opsional)
 cp "$imageName" old.img
 qemu-img create -f qcow2 new.img "$vmSize"
 virt-resize --expand /dev/sda1 old.img new.img
-
-# Ganti old.img dengan new.img
 mv new.img "$imageName"
 rm old.img
 
-# Buat VM tanpa disk IDE
 qm create "$virtualMachineId" \
   --name "$templateName" \
   --memory "$tmp_memory" \
@@ -100,35 +89,33 @@ qm create "$virtualMachineId" \
   --ide0 none \
   --ostype l26
 
-# Impor disk yang sudah diperbesar
+
+# 1. Import disk
 qm importdisk "$virtualMachineId" "$imageName" "$vmDiskStorage" --format qcow2
 
-# Pastikan tidak ada device IDE
+# 2. Ambil nama volume
+VOL_NAME=$(pvesm list "$vmDiskStorage" | grep "$virtualMachineId" | grep '\.qcow2' | awk '{print $1}' | tail -n 1)
+
+# Hapus device IDE dan SCSI yang ada (jika ada)
 qm set "$virtualMachineId" --delete ide0
+qm set "$virtualMachineId" --delete ide1
 
-# Pasang disk ke scsi0
-qm set "$virtualMachineId" --scsi0 "${vmDiskStorage}:vm-${virtualMachineId}-disk-0"
+# 4. Pastikan controller SCSI ada
+qm set "$virtualMachineId" --scsihw virtio-scsi-pci
 
-# Atur boot
-qm set "$virtualMachineId" --boot c --bootdisk scsi0
+# 5. Pasang disk utama langsung ke scsi0
+qm set "$virtualMachineId" --scsi0 "vmc-pool:9000/vm-9000-disk-0.qcow2",ssd=1
 
-# Pasang CloudInit di ide2 (bisa juga scsi1/sata0)
-qm set "$virtualMachineId" --ide2 "${vmDiskStorage}:cloudinit"
+# 6. Pasang CloudInit drive ke scsi1
+qm set "$virtualMachineId" --scsi1 "${vmDiskStorage}:cloudinit",media=cdrom,ssd=1
 
-# Console & VGA
+qm set "$virtualMachineId" --boot c --bootdisk scsi1
 qm set "$virtualMachineId" --serial0 socket --vga serial0
-
-# DHCP
 qm set "$virtualMachineId" --ipconfig0 ip=dhcp
-
-# CPU
 qm set "$virtualMachineId" --cpu cputype="$cpuTypeRequired"
-
-# Custom CloudInit config
 qm set "$virtualMachineId" --cicustom "user=${snippetStorageID}:snippets/user-data"
+qm config "$virtualMachineId"
 
-# Jadikan template
 qm template "$virtualMachineId"
-
-echo "VM template '$templateName' created with disk size = $vmSize (no qm resize needed)."
+echo "VM template '$templateName' created with disk attached on scsi0 via move_disk and CloudInit on scsi1."
 rm "$imageName"

@@ -95,7 +95,7 @@ qm importdisk "$virtualMachineId" "$imageName" "$vmDiskStorage" --format qcow2
 
 # 2. Ambil nama volume
 VOL_NAME=$(pvesm list "$vmDiskStorage" | grep "$virtualMachineId" | grep '\.qcow2' | awk '{print $1}' | tail -n 1)
-
+echo "Nilai VOL_NAME: ${VOL_NAME}"
 # Hapus device IDE dan SCSI yang ada (jika ada)
 qm set "$virtualMachineId" --delete ide0
 qm set "$virtualMachineId" --delete ide1
@@ -104,7 +104,7 @@ qm set "$virtualMachineId" --delete ide1
 qm set "$virtualMachineId" --scsihw virtio-scsi-pci
 
 # 5. Pasang disk utama langsung ke scsi0
-qm set "$virtualMachineId" --scsi0 "vmc-pool:9000/vm-9000-disk-0.qcow2",ssd=1
+qm set "$virtualMachineId" --scsi0 "${VOL_NAME}",ssd=1
 
 # 6. Pasang CloudInit drive ke scsi1
 qm set "$virtualMachineId" --scsi1 "${vmDiskStorage}:cloudinit",media=cdrom,ssd=1

@@ -16,7 +16,6 @@ tmp_memory="2048"
 rootPasswd="rootpassword"
 cpuTypeRequired="host"
 userVmPassword="userpassword"
-ghToken=""
 vmSize="10G"
 sshKey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCbD+rEp2nhup4QDDeO/+mmCidCfPJ1O9qzRx5ON3/HQFkjsachM19RY6nXKi3ZwADQAHUYgsv1xE70vW7A5m6z9FaJRaW/qCVP8E1Ay7xN2FVg+4LDWvYZcRZ+ldb/KgJpDRvmNIO00MrSOgKoqZN7a4resM/kGI/OnbZ2NM635aMg0RUXJUhC6299Sat8r2+nzxoUxrqLChlGlmMnqEEMlrzyjkcWmjj1UUF4hvdvXMeSgpOAlc2QSZKyh4quUbOPiN0nRPq/IYU8mfRYJOeGUDE0zDMsZS302fZ/Y2vEi/rdGSMFe09zEk1OHgqAm6t7wnOJShu/4dcc06SZGz8NA7WNfM5omuUchMRyx2/aZEYZd7ZbAS5Hj2SV4vWOl+c9AXabLD2P+ZzjyFCL7BMFOb2p6Mp/59X35Uc+dBOVqhBmfwROmceqdaBad5FQk4L892d4AYrCVw5shepEp5yf4KGqyIQx12SH7hkRWTKFgis1lfMKH2LJW2c1h5CZpEIPe3VB+f2ojjK6OoPb32FtmcnEkqkp1uKw2j7bmHiOg7+CqZ7qYikcSRVAiLzjJJHUEbKDbb/hT2m5Qj8mG9j0EqEGzxy7L0KTGg8QAu9yx1s36Q+eMGBZHiDYiuwi9OBVSsb2OyYIBBNClUNUycU4RqWfKFIMkwIHnItY+Bquhw== asakusa@archangel"
 
@@ -45,7 +44,6 @@ runcmd:
   - usermod -aG docker user-vm
   - systemctl enable docker.service
   - systemctl enable containerd.service
-  - echo "${ghToken}" | gh auth login --with-token
   - git config --global user.name "Azzamsyakir"
   - git config --global user.email "azzamsykir@gmail.com"
   - mkdir -p /home/user-vm/.ssh
@@ -61,7 +59,7 @@ runcmd:
   - su - user-vm -c 'git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git \${ZSH_CUSTOM:-\$HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting'
   - su - user-vm -c 'git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git \${ZSH_CUSTOM:-\$HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete'
   - su - user-vm -c 'if grep -q "plugins=(" \$HOME/.zshrc; then sudo sed -i "s/^plugins=(.*)\$/plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)/" \$HOME/.zshrc; else echo "plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)" | sudo tee -a \$HOME/.zshrc; fi'
-  - su - user-vm -c "sudo chsh -s \$(which zsh)"
+  - chsh -s $(which zsh) user-vm
 EOF
 
 mkdir -p "$snippetPath"
@@ -128,6 +126,7 @@ qm set "$virtualMachineId" --cpu cputype="$cpuTypeRequired"
 # Custom CloudInit config
 qm set "$virtualMachineId" --cicustom "user=${snippetStorageID}:snippets/user-data"
 
+qm set "$virtualMachineId" --agent enabled=1
 # Jadikan template
 qm template "$virtualMachineId"
 

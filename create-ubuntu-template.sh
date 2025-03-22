@@ -72,13 +72,23 @@ qm destroy "$virtualMachineId"
 # Pasang qemu-guest-agent & atur root password
 virt-customize -a "$imageName" --install qemu-guest-agent
 virt-customize -a "$imageName" --root-password password:"$rootPasswd"
-
 # Resize disk sebelum impor (opsional)
 cp "$imageName" old.img
 qemu-img create -f qcow2 new.img "$vmSize"
 virt-resize --expand /dev/sda1 old.img new.img
+
+# Cek apakah new.img berhasil dibuat
+if [ ! -f new.img ]; then
+  echo "Error: new.img tidak ditemukan setelah virt-resize."
+  exit 1
+fi
+
+# Update GRUB pada new.img menggunakan path absolut
+virt-customize -a "$(pwd)/new.img" --run-command "grub-install /dev/sda && update-grub"
+
 mv new.img "$imageName"
 rm old.img
+
 
 qm create "$virtualMachineId" \
   --name "$templateName" \
@@ -88,7 +98,6 @@ qm create "$virtualMachineId" \
   --scsihw virtio-scsi-pci \
   --ide0 none \
   --ostype l26
-
 
 # 1. Import disk
 qm importdisk "$virtualMachineId" "$imageName" "$vmDiskStorage" --format qcow2
@@ -100,22 +109,27 @@ echo "Nilai VOL_NAME: ${VOL_NAME}"
 qm set "$virtualMachineId" --delete ide0
 qm set "$virtualMachineId" --delete ide1
 
-# 4. Pastikan controller SCSI ada
-qm set "$virtualMachineId" --scsihw virtio-scsi-pci
-
 # 5. Pasang disk utama langsung ke scsi0
 qm set "$virtualMachineId" --scsi0 "${VOL_NAME}",ssd=1
+qm set "$virtualMachineId" --boot c --bootdisk scsi0
 
-# 6. Pasang CloudInit drive ke scsi1
-qm set "$virtualMachineId" --scsi1 "${vmDiskStorage}:cloudinit",media=cdrom,ssd=1
+# 6. Pasang CloudInit drive ke ide0
+qm set "$virtualMachineId" --ide0 "${vmDiskStorage}:cloudinit"
 
-qm set "$virtualMachineId" --boot c --bootdisk scsi1
+# Console & VGA
 qm set "$virtualMachineId" --serial0 socket --vga serial0
-qm set "$virtualMachineId" --ipconfig0 ip=dhcp
-qm set "$virtualMachineId" --cpu cputype="$cpuTypeRequired"
-qm set "$virtualMachineId" --cicustom "user=${snippetStorageID}:snippets/user-data"
-qm config "$virtualMachineId"
 
+# DHCP
+qm set "$virtualMachineId" --ipconfig0 ip=dhcp
+
+# CPU
+qm set "$virtualMachineId" --cpu cputype="$cpuTypeRequired"
+
+# Custom CloudInit config
+qm set "$virtualMachineId" --cicustom "user=${snippetStorageID}:snippets/user-data"
+
+# Jadikan template
 qm template "$virtualMachineId"
-echo "VM template '$templateName' created with disk attached on scsi0 via move_disk and CloudInit on scsi1."
+
+echo "VM template '$templateName' created with disk size = $vmSize (no qm resize needed)."
 rm "$imageName"

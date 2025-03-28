@@ -1,10 +1,8 @@
 #!/bin/bash
 vmDiskStorage="vmc-pool"
-backupStorage="bckp-pool"
-isoStorage="iso-pool"
 imageURL="https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 imageName="noble-server-cloudimg-amd64.img"
-virtualMachineId="9000"
+templateId="9000"
 templateName="ubuntu-24.04-template"
 tmp_cores="2"
 tmp_memory="512"

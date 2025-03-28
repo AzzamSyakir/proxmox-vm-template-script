@@ -2,14 +2,13 @@
 vmDiskStorage="vmc-pool"
 imageURL="https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 imageName="noble-server-cloudimg-amd64.img"
-templateId="9000"
-templateName="ubuntu-24.04-template"
-tmp_cores="2"
-tmp_memory="512"
+tmpId="9000"
+tmpName="ubuntu-24.04-template"
+tmpCores="2"
+tmpMemory="512"
+tmpSize="5G"
 rootPasswd="rootpassword"
-cpuTypeRequired="host"
-userVmPassword="userpassword"
-vmSize="5G"
+userPassword="userpassword"
 sshKey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCbD+rEp2nhup4QDDeO/+mmCidCfPJ1O9qzRx5ON3/HQFkjsachM19RY6nXKi3ZwADQAHUYgsv1xE70vW7A5m6z9FaJRaW/qCVP8E1Ay7xN2FVg+4LDWvYZcRZ+ldb/KgJpDRvmNIO00MrSOgKoqZN7a4resM/kGI/OnbZ2NM635aMg0RUXJUhC6299Sat8r2+nzxoUxrqLChlGlmMnqEEMlrzyjkcWmjj1UUF4hvdvXMeSgpOAlc2QSZKyh4quUbOPiN0nRPq/IYU8mfRYJOeGUDE0zDMsZS302fZ/Y2vEi/rdGSMFe09zEk1OHgqAm6t7wnOJShu/4dcc06SZGz8NA7WNfM5omuUchMRyx2/aZEYZd7ZbAS5Hj2SV4vWOl+c9AXabLD2P+ZzjyFCL7BMFOb2p6Mp/59X35Uc+dBOVqhBmfwROmceqdaBad5FQk4L892d4AYrCVw5shepEp5yf4KGqyIQx12SH7hkRWTKFgis1lfMKH2LJW2c1h5CZpEIPe3VB+f2ojjK6OoPb32FtmcnEkqkp1uKw2j7bmHiOg7+CqZ7qYikcSRVAiLzjJJHUEbKDbb/hT2m5Qj8mG9j0EqEGzxy7L0KTGg8QAu9yx1s36Q+eMGBZHiDYiuwi9OBVSsb2OyYIBBNClUNUycU4RqWfKFIMkwIHnItY+Bquhw== asakusa@archangel"
 
 apt update
@@ -55,7 +54,7 @@ su - user-vm -c 'if grep -q "plugins=(" $HOME/.zshrc; then sudo sed -i "s/^plugi
 chsh -s $(which zsh) user-vm
 EOF
 
-sed -i "s/__USERVM_PASSWORD__/${userVmPassword}/g" firstboot.sh
+sed -i "s/__USERVM_PASSWORD__/${userPassword}/g" firstboot.sh
 sed -i "s#__SSH_KEY__#${sshKey}#g" firstboot.sh
 
 cat <<'EOF' > firstboot.service
@@ -75,7 +74,7 @@ EOF
 virt-customize -a "$imageName" --install qemu-guest-agent --root-password password:"$rootPasswd" --upload firstboot.sh:/usr/local/bin/firstboot.sh --chmod 0755:/usr/local/bin/firstboot.sh --upload firstboot.service:/etc/systemd/system/firstboot.service --run-command "systemctl enable firstboot.service"
 
 cp "$imageName" old.img
-qemu-img create -f qcow2 new.img "$vmSize"
+qemu-img create -f qcow2 new.img "$tmpSize"
 virt-resize --expand /dev/sda1 old.img new.img
 if [ ! -f new.img ]; then
   exit 1
@@ -84,18 +83,15 @@ virt-customize -a "$(pwd)/new.img" --run-command "grub-install /dev/sda && updat
 mv new.img "$imageName"
 rm old.img
 
-qm destroy "$templateId"
-qm create "$templateId" --name "$templateName" --memory "$tmp_memory" --cores "$tmp_cores" --net0 virtio,bridge=vmbr1 --scsihw virtio-scsi-pci
-qm importdisk "$templateId" "$imageName" "$vmDiskStorage" --format qcow2
-VOL_NAME=$(pvesm list "$vmDiskStorage" | grep "$templateId" | grep '\.qcow2' | awk '{print $1}' | tail -n 1)
-qm set "$templateId" --delete ide0
-qm set "$templateId" --delete ide1
-qm set "$templateId" --scsi0 "${VOL_NAME}",ssd=1
-qm set "$templateId" --boot c --bootdisk scsi0
-qm set "$templateId" --ide0 "${vmDiskStorage}:cloudinit"
-qm set "$templateId" --serial0 socket --vga serial0
-qm set "$templateId" --ipconfig0 ip=dhcp
-qm set "$templateId" --cpu cputype="$cpuTypeRequired"
-qm set "$templateId" --agent enabled=1
-qm template "$templateId"
+qm destroy "$tmpId"
+qm create "$tmpId" --name "$tmpName" --memory "$tmpMemory" --cores "$tmpCores" --net0 virtio,bridge=vmbr1 --scsihw virtio-scsi-pci
+qm importdisk "$tmpId" "$imageName" "$vmDiskStorage" --format qcow2
+VOL_NAME=$(pvesm list "$vmDiskStorage" | grep "$tmpId" | grep '\.qcow2' | awk '{print $1}' | tail -n 1)
+qm set "$tmpId" --scsi0 "${VOL_NAME}",ssd=1
+qm set "$tmpId" --boot c --bootdisk scsi0
+qm set "$tmpId" --ide0 "${vmDiskStorage}:cloudinit"
+qm set "$tmpId" --serial0 socket --vga serial0
+qm set "$tmpId" --ipconfig0 ip=dhcp
+qm set "$tmpId" --agent enabled=1
+qm template "$tmpId"
 rm "$imageName" firstboot.sh firstboot.service

@@ -1,13 +1,13 @@
 # Proxmox Cloud-Init Template Script
 
-This repository contains a script that automates the creation of an Ubuntu cloud-init template for Proxmox VE. The script downloads an Ubuntu cloud image, customizes it with first-boot configurations, resizes the disk, and finally creates a Proxmox template for quick virtual machine provisioning.
+This repository contains a script that automates the creation of a cloud-init template for Proxmox VE. The script downloads an either an Ubuntu or a Debian cloud image, customizes it with first-boot configurations, resizes the disk, and finally creates a Proxmox template for quick virtual machine provisioning.
 
 ## Overview
 
 The script performs the following tasks:
 
 - **Update & Install Prerequisites:** Updates the system and installs necessary packages (e.g., `libguestfs-tools`, `wget`).
-- **Download Image:** Retrieves an Ubuntu cloud image from the official Ubuntu cloud images repository.
+- **Download Image:** Retrieves an Ubuntu/Debian cloud image from the official cloud images repository
 - **Customize Image:** Creates a `firstboot.sh` script that sets up a user account, installs packages (like Docker, zsh, and Git), configures SSH keys, and performs additional customizations.
 - **Resize Disk:** Uses `virt-resize` to expand the disk to the desired size.
 - **Create Proxmox Template:** Configures a new Proxmox virtual machine, imports the disk, and sets up cloud-init integration.
@@ -23,7 +23,7 @@ The script performs the following tasks:
   - Other dependencies as installed by the script
 
 ## Variable Configuration
-Below is an example of how you might set up the variables at the top of your script:
+Below is an example of how you might set up the variables at the top of your Ubuntu script:
 
 ```bash
 # Example variables
@@ -100,7 +100,7 @@ sshKey="ssh-rsa...."
 Once the script is executable, simply run it as shown above. The script will:
 
 1. Update the system and install required packages.
-2. Download the specified Ubuntu cloud image.
+2. Download the specified Ubuntu/Debian cloud image.
 3. Customize the image with user settings, SSH keys, Docker, etc.
 4. Resize the disk to the specified size.
 5. Create a Proxmox VM and convert it into a template for future deployments.
@@ -138,6 +138,7 @@ This script is inspired by [andrewglass3](https://github.com/andrewglass3) and b
 
 - [Proxmox VE](https://proxmox.com/en/) – Official Proxmox VE website.
 - [Ubuntu Cloud Images](https://cloud-images.ubuntu.com/) – Official Ubuntu cloud images.
+- [Debian Cloud Images](https://cloud.debian.org/images/cloud/) - Official Debian cloud images.
 - [Proxmox Community Forum](https://forum.proxmox.com/) – Get help and discuss Proxmox-related topics.
 
 ## License

@@ -1,5 +1,5 @@
 #!/bin/bash
-vmDiskStorage="vmc-pool"
+vmDiskStorage="local-lvm"
 imageURL="https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 imageName="noble-server-cloudimg-amd64.img"
 tmpId="9000"
@@ -9,7 +9,7 @@ tmpMemory="512"
 tmpSize="5G"
 rootPasswd="rootpassword"
 userPassword="userpassword"
-sshKey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCbD+rEp2nhup4QDDeO/+mmCidCfPJ1O9qzRx5ON3/HQFkjsachM19RY6nXKi3ZwADQAHUYgsv1xE70vW7A5m6z9FaJRaW/qCVP8E1Ay7xN2FVg+4LDWvYZcRZ+ldb/KgJpDRvmNIO00MrSOgKoqZN7a4resM/kGI/OnbZ2NM635aMg0RUXJUhC6299Sat8r2+nzxoUxrqLChlGlmMnqEEMlrzyjkcWmjj1UUF4hvdvXMeSgpOAlc2QSZKyh4quUbOPiN0nRPq/IYU8mfRYJOeGUDE0zDMsZS302fZ/Y2vEi/rdGSMFe09zEk1OHgqAm6t7wnOJShu/4dcc06SZGz8NA7WNfM5omuUchMRyx2/aZEYZd7ZbAS5Hj2SV4vWOl+c9AXabLD2P+ZzjyFCL7BMFOb2p6Mp/59X35Uc+dBOVqhBmfwROmceqdaBad5FQk4L892d4AYrCVw5shepEp5yf4KGqyIQx12SH7hkRWTKFgis1lfMKH2LJW2c1h5CZpEIPe3VB+f2ojjK6OoPb32FtmcnEkqkp1uKw2j7bmHiOg7+CqZ7qYikcSRVAiLzjJJHUEbKDbb/hT2m5Qj8mG9j0EqEGzxy7L0KTGg8QAu9yx1s36Q+eMGBZHiDYiuwi9OBVSsb2OyYIBBNClUNUycU4RqWfKFIMkwIHnItY+Bquhw== asakusa@archangel"
+sshKey="ssh...."
 
 apt update
 apt install -y libguestfs-tools wget

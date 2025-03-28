@@ -2,14 +2,14 @@
 vmDiskStorage="local-lvm"
 imageURL="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
 imageName="debian-12-generic-amd64.qcow2"
-tmpId="9000"
+tmpId="8000"
 tmpName="debian-12-template"
 tmpCores="2"
 tmpMemory="512"
 tmpSize="5G"
 rootPasswd="rootpassword"
 userPassword="userpassword"
-sshKey="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ5zZa7snOPSB8imgtgY07BqLLTMk7b6XjohuNqXPXLM kareem@yubikey-1"
+sshKey="ssh...."
 
 apt update
 apt install -y libguestfs-tools wget
@@ -26,6 +26,7 @@ usermod -aG sudo user-vm
 echo "user-vm ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/user-vm
 chmod 0440 /etc/sudoers.d/user-vm
 apt-get update
+apt-get install -y git
 apt-get install -y qemu-guest-agent ca-certificates curl apt-transport-https gnupg lsb-release
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc

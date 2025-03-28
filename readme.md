@@ -15,7 +15,7 @@ The script performs the following tasks:
 ## Prerequisites
 
 - **Proxmox VE with the following storage pools:**
-  - **Virtual machine disks:** Default is usually `local-lvm`, but in my case I named the storage for VMs `vmc-pool`.
+  - **Virtual machine disks:** Default is usually `local-lvm`, but in my case I named the storage for VMs with `vmc-pool`.
 - Root or administrator access to the Proxmox host.
 - Required packages:
   - `libguestfs-tools`

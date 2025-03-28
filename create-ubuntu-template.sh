@@ -84,18 +84,18 @@ virt-customize -a "$(pwd)/new.img" --run-command "grub-install /dev/sda && updat
 mv new.img "$imageName"
 rm old.img
 
-qm destroy "$virtualMachineId"
-qm create "$virtualMachineId" --name "$templateName" --memory "$tmp_memory" --cores "$tmp_cores" --net0 virtio,bridge=vmbr1 --scsihw virtio-scsi-pci
-qm importdisk "$virtualMachineId" "$imageName" "$vmDiskStorage" --format qcow2
-VOL_NAME=$(pvesm list "$vmDiskStorage" | grep "$virtualMachineId" | grep '\.qcow2' | awk '{print $1}' | tail -n 1)
-qm set "$virtualMachineId" --delete ide0
-qm set "$virtualMachineId" --delete ide1
-qm set "$virtualMachineId" --scsi0 "${VOL_NAME}",ssd=1
-qm set "$virtualMachineId" --boot c --bootdisk scsi0
-qm set "$virtualMachineId" --ide0 "${vmDiskStorage}:cloudinit"
-qm set "$virtualMachineId" --serial0 socket --vga serial0
-qm set "$virtualMachineId" --ipconfig0 ip=dhcp
-qm set "$virtualMachineId" --cpu cputype="$cpuTypeRequired"
-qm set "$virtualMachineId" --agent enabled=1
-qm template "$virtualMachineId"
+qm destroy "$templateId"
+qm create "$templateId" --name "$templateName" --memory "$tmp_memory" --cores "$tmp_cores" --net0 virtio,bridge=vmbr1 --scsihw virtio-scsi-pci
+qm importdisk "$templateId" "$imageName" "$vmDiskStorage" --format qcow2
+VOL_NAME=$(pvesm list "$vmDiskStorage" | grep "$templateId" | grep '\.qcow2' | awk '{print $1}' | tail -n 1)
+qm set "$templateId" --delete ide0
+qm set "$templateId" --delete ide1
+qm set "$templateId" --scsi0 "${VOL_NAME}",ssd=1
+qm set "$templateId" --boot c --bootdisk scsi0
+qm set "$templateId" --ide0 "${vmDiskStorage}:cloudinit"
+qm set "$templateId" --serial0 socket --vga serial0
+qm set "$templateId" --ipconfig0 ip=dhcp
+qm set "$templateId" --cpu cputype="$cpuTypeRequired"
+qm set "$templateId" --agent enabled=1
+qm template "$templateId"
 rm "$imageName" firstboot.sh firstboot.service

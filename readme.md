@@ -23,23 +23,21 @@ The script performs the following tasks:
   - Other dependencies as installed by the script
 
 ## Variable Configuration
-
-Here is an example of how you might set up the variables at the top of your script:
+Below is an example of how you might set up the variables at the top of your script:
 
 ```bash
 # Example variables
-imageURL="https://cloud-images.ubuntu.com/jammy/20230830/jammy-server-cloudimg-amd64.img"
-imageName="jammy-server-cloudimg-amd64.img"
-vmDiskStorage="local-lvm"
-virtualMachineId="9000"
-templateName="jammy-tpl"
-tmp_cores="2"
-tmp_memory="2048"
-rootPasswd="password"
-cpuTypeRequired="host"
-userVmPassword="password"
-vmSize="5G"
-sshKey="ssh-rsa AAAAB3NzaC1ycE..."
+vmDiskStorage="vmc-pool"
+imageURL="https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+imageName="noble-server-cloudimg-amd64.img"
+tmpId="9000"
+tmpName="ubuntu-24.04-template"
+tmpCores="2"
+tmpMemory="512"
+tmpSize="5G"
+rootPasswd="rootpassword"
+userPassword="userpassword"
+sshKey="ssh-rsa...."
 ```
 
 > **Note:** Adjust these variables to match your own Proxmox environment, desired VM specs, and cloud image URL.

@@ -1,6 +1,6 @@
 # Proxmox Cloud-Init Template Script
 
-This repository contains a Bash script that automates the creation of an Ubuntu cloud-init template for Proxmox VE. The script downloads an Ubuntu cloud image, customizes it with first-boot configurations, resizes the disk, and finally creates a Proxmox template for quick virtual machine provisioning.
+This repository contains a script that automates the creation of an Ubuntu cloud-init template for Proxmox VE. The script downloads an Ubuntu cloud image, customizes it with first-boot configurations, resizes the disk, and finally creates a Proxmox template for quick virtual machine provisioning.
 
 ## Overview
 

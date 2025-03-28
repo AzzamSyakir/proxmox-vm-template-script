@@ -36,8 +36,6 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 usermod -aG docker user-vm
 systemctl enable docker.service
 systemctl enable containerd.service
-git config --global user.name "Azzamsyakir"
-git config --global user.email "azzamsykir@gmail.com"
 mkdir -p /home/user-vm/.ssh
 echo "__SSH_KEY__" > /home/user-vm/.ssh/authorized_keys
 chown -R user-vm:user-vm /home/user-vm/.ssh
